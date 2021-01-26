@@ -1,0 +1,45 @@
+name: Pull Requests
+
+on: [ pull_request ]
+
+jobs:
+  build:
+    runs-on: [ ubuntu-latest ]
+    env:
+      slack_mention: 'TODO' #メンバーID
+      flutter_channel: 'TODO'
+      flutter_version: 'TODO'
+
+    steps:
+      ### setup ###
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: ${{ env.flutter_channel }}
+          flutter-version: ${{ env.flutter_version }}
+      - run: flutter pub get
+
+      ### test ###
+      - name: test
+        run: ./scripts/test.sh
+
+      - name: Codecov
+        uses: codecov/codecov-action@v1
+        continue-on-error: true
+        timeout-minutes: 1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: coverage/lcov.info
+
+      ### slack ###
+      - name: action-slack
+        uses: 8398a7/action-slack@v3
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        with:
+          fields: repo,commit,job,took,workflow
+          mention: ${{ env.slack_mention }}
+          if_mention: always
+          status: ${{ job.status }}

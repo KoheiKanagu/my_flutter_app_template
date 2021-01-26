@@ -1,0 +1,46 @@
+name: my_app
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  firebase_core: ^0.5.3
+  firebase_admob: ^0.10.3
+  firebase_analytics: ^6.3.0
+  firebase_crashlytics: ^0.2.4
+  firebase_performance: ^0.4.3
+  freezed_annotation: any
+  hooks_riverpod: ^0.12.1
+  flutter_hooks: ^0.15.0
+  gap: ^1.2.0
+  logger: ^0.9.4
+  json_annotation: any
+
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: any
+  pedantic_mono: any
+  freezed: ^0.12.6
+  flutter_launcher_icons: ^0.8.1
+  json_serializable: ^3.5.1
+
+flutter:
+  uses-material-design: true
+#   assets:
+#     - assets/icon/
+
+flutter_icons:
+  android: "ic_launcher"
+  image_path: "assets/icon/icon.png"
+  ios: true
