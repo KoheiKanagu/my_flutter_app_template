@@ -93,7 +93,14 @@ void _validateProjectId() {
   }
 }
 
-class MyApp extends HookWidget {
+class MyApp extends StatefulHookWidget {
+  const MyApp({Key key}) : super(key: key);
+
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   final _analytics = FirebaseAnalytics();
 
   @override
@@ -113,6 +120,22 @@ class MyApp extends HookWidget {
         Locale('ja'),
       ],
     );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.resumed:
+        break;
+      case AppLifecycleState.inactive:
+        break;
+      case AppLifecycleState.paused:
+        break;
+      case AppLifecycleState.detached:
+        break;
+    }
   }
 }
 
