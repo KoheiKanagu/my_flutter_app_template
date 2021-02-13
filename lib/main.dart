@@ -101,7 +101,8 @@ class MyApp extends StatefulHookWidget {
 }
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
-  final _analytics = FirebaseAnalytics();
+  final _analytics = FirebaseAnalytics()
+    ..setAnalyticsCollectionEnabled(kReleaseMode);
 
   @override
   Widget build(BuildContext context) {
