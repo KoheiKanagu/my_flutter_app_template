@@ -76,13 +76,11 @@ jobs:
           git clean -fd
 
       - name: bump develop
-        uses: stefanzweifel/git-auto-commit-action@v4
         if: ${{ startsWith(github.event.pull_request.head.ref, 'release') }}
-        with:
-          commit_author: GitHub Actions <actions@github.com>
-          commit_message: '#minor'
-          branch: develop
-          commit_options: '--allow-empty'
+        run: |
+          git checkout develop
+          git -c user.name="GitHub Actions" -c user.email="actions@github.com" commit -m "#minor" --allow-empty
+          git push
 
       ### slack ###
       - name: action-slack
