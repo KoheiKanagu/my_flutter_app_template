@@ -2,13 +2,14 @@ name: Pull Requests
 
 on: [ pull_request ]
 
+env:
+  slack_mention: 'TODO' #メンバーID
+  flutter_channel: 'TODO'
+  flutter_version: 'TODO'
+
 jobs:
   build:
     runs-on: [ ubuntu-latest ]
-    env:
-      slack_mention: 'TODO' #メンバーID
-      flutter_channel: 'TODO'
-      flutter_version: 'TODO'
 
     steps:
       ### setup ###
