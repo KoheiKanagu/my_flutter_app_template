@@ -8,6 +8,11 @@ on:
         required: false
         default: 'dev'
 
+env:
+  slack_mention: 'TODO' #メンバーID
+  flutter_channel: 'TODO'
+  flutter_version: 'TODO'
+
 jobs:
   build:
     strategy:
@@ -15,10 +20,6 @@ jobs:
       matrix:
         os: [ ubuntu-latest, self-hosted ]
     runs-on: ${{ matrix.os }}
-    env:
-      slack_mention: 'TODO' #メンバーID
-      flutter_channel: 'TODO'
-      flutter_version: 'TODO'
 
     steps:
       ### setup ###
