@@ -7,14 +7,15 @@ on:
       - master
     types: [ closed ]
 
+env:
+  slack_mention: TODO #メンバーID
+  flutter_channel: 'TODO'
+  flutter_version: 'TODO'
+
 jobs:
   release:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
-    env:
-      slack_mention: TODO #メンバーID
-      flutter_channel: 'TODO'
-      flutter_version: 'TODO'
     outputs:
       build_name: ${{ steps.bump_tags.outputs.new_tag }}
       release_notes: ${{ steps.create_release_notes.outputs.release_notes }}
@@ -133,8 +134,8 @@ jobs:
 
       - uses: subosito/flutter-action@v1
         with:
-          channel: ${{ needs.release.env.flutter_channel }}
-          flutter-version: ${{ needs.release.env.flutter_version }}
+          channel: ${{ env.flutter_channel }}
+          flutter-version: ${{ env.flutter_version }}
 
       - name: calc build number
         run: echo "build_number=`git rev-list HEAD --count`" >> $GITHUB_ENV
