@@ -1,0 +1,40 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "dev",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "type": "dart",
+      "args": [
+        "--dart-define=APP_NAME=devアプリ",
+        "--dart-define=APP_SUFFIX=.dev",
+        "--dart-define=APP_ENV=dev"
+      ]
+    },
+    {
+      "name": "stg",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "type": "dart",
+      "args": [
+        "--dart-define=APP_NAME=stgアプリ",
+        "--dart-define=APP_SUFFIX=.stg",
+        "--dart-define=APP_ENV=stg"
+      ]
+    },
+    {
+      "name": "prod",
+      "request": "launch",
+      "program": "lib/main.dart",
+      "type": "dart",
+      "args": [
+        "--dart-define=APP_NAME=prodアプリ",
+        "--dart-define=APP_ENV=prod"
+      ]
+    }
+  ]
+}
