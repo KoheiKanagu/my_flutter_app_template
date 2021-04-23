@@ -13,34 +13,40 @@ case $1 in
 "dev")
   APP_NAME=devアプリ
   APP_SUFFIX=.dev
+  APP_ASSOCIATED_DOMAIN=applinks:exampledev.page.link
 
   flutter build ios \
     --release \
     --dart-define APP_NAME=$APP_NAME \
     --dart-define APP_SUFFIX=$APP_SUFFIX \
     --dart-define APP_ENV=$1 \
+    --dart-define APP_ASSOCIATED_DOMAIN=$APP_ASSOCIATED_DOMAIN \
     --build-name $2 \
     --build-number $3
   ;;
 "stg")
   APP_NAME=stgアプリ
   APP_SUFFIX=.stg
+  APP_ASSOCIATED_DOMAIN=applinks:examplestg.page.link
 
   flutter build ios \
     --release \
     --dart-define APP_NAME=$APP_NAME \
     --dart-define APP_SUFFIX=$APP_SUFFIX \
+    --dart-define APP_ASSOCIATED_DOMAIN=$APP_ASSOCIATED_DOMAIN \
     --dart-define APP_ENV=$1 \
     --build-name $2 \
     --build-number $3
   ;;
 "prod")
   APP_NAME=prodアプリ
+  APP_ASSOCIATED_DOMAIN=applinks:example.page.link
 
   flutter build ios \
     --release \
     --dart-define APP_NAME=$APP_NAME \
     --dart-define APP_ENV=$1 \
+    --dart-define APP_ASSOCIATED_DOMAIN=$APP_ASSOCIATED_DOMAIN \
     --build-name $2 \
     --build-number $3
   ;;
