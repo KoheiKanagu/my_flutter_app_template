@@ -50,7 +50,7 @@ jobs:
         run: ${{ matrix.build_script }}
 
       ### Slack ###
-      - name: action-slack
+      - name: Notify Slack
         uses: 8398a7/action-slack@v3
         if: always()
         env:

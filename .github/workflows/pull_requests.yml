@@ -23,8 +23,8 @@ jobs:
 
       - run: flutter pub get
 
-      ### test ###
-      - name: test
+      ### Test ###
+      - name: Test
         run: .github/workflows/scripts/test.sh
 
       - name: Codecov
@@ -36,7 +36,7 @@ jobs:
           file: coverage/lcov.info
 
       ### Slack ###
-      - name: action-slack
+      - name: Notify Slack
         uses: 8398a7/action-slack@v3
         if: always()
         env:
