@@ -14,7 +14,7 @@ case $1 in
   APP_SUFFIX=.dev
   APP_ASSOCIATED_DOMAIN=applinks:com.example.page.link                           # FIXME
   APP_PROVISIONING_PROFILE_SPECIFIER="dev.kingu.myFlutterAppTemplate.dev Ad Hoc" # FIXME
-  BUNDLE_IDENTIFIER=dev.kingu.my_flutter_app_template.dev                        # FIXME
+  BUNDLE_IDENTIFIER=dev.kingu.myFlutterAppTemplate.dev                           # FIXME
 
   plutil \
     -replace 'provisioningProfiles' \
@@ -37,7 +37,7 @@ case $1 in
   APP_SUFFIX=.stg
   APP_ASSOCIATED_DOMAIN=applinks:com.example.page.link                           # FIXME
   APP_PROVISIONING_PROFILE_SPECIFIER="dev.kingu.myFlutterAppTemplate.stg Ad Hoc" # FIXME
-  BUNDLE_IDENTIFIER=dev.kingu.my_flutter_app_template.stg                        # FIXME
+  BUNDLE_IDENTIFIER=dev.kingu.myFlutterAppTemplate.stg                           # FIXME
 
   plutil \
     -replace 'provisioningProfiles' \
@@ -59,7 +59,7 @@ case $1 in
   APP_NAME=prodアプリ                                                           # FIXME
   APP_ASSOCIATED_DOMAIN=applinks:com.example.page.link                       # FIXME
   APP_PROVISIONING_PROFILE_SPECIFIER="dev.kingu.myFlutterAppTemplate Ad Hoc" # FIXME
-  BUNDLE_IDENTIFIER=dev.kingu.my_flutter_app_template                        # FIXME
+  BUNDLE_IDENTIFIER=dev.kingu.myFlutterAppTemplate                           # FIXME
 
   plutil \
     -replace 'provisioningProfiles' \
