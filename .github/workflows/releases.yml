@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
     outputs:
-      build_number: ${{ steps.calc_build_number.build_number }}
+      build_number: ${{ steps.calc_build_number.outputs.build_number }}
       build_name: ${{ steps.bump_tags.outputs.new_tag }}
       release_notes: ${{ steps.create_release_notes.outputs.release_notes }}
       upload_url: ${{ steps.create_release.outputs.upload_url }}
