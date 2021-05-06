@@ -4,37 +4,39 @@ on:
   pull_request:
     branches:
       - develop
-      - master
-    types: [ closed ]
+      - main
+    types:
+      - closed
 
 env:
-  slack_mention: TODO #メンバーID
-  flutter_channel: 'TODO'
-  flutter_version: 'TODO'
+  SLACK_MENTION: "UQ0KVAQ6T" #メンバーID # FIXME
+  FLUTTER_CHANNEL: "stable" # FIXME
+  FLUTTER_VERSION: "2.0.6" # FIXME
 
 jobs:
   release:
     runs-on: ubuntu-latest
     if: github.event.pull_request.merged == true
     outputs:
+      build_number: ${{ steps.calc_build_number.build_number }}
       build_name: ${{ steps.bump_tags.outputs.new_tag }}
       release_notes: ${{ steps.create_release_notes.outputs.release_notes }}
       upload_url: ${{ steps.create_release.outputs.upload_url }}
 
     steps:
-      ### setup ###
+      ### Set up ###
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
       - uses: subosito/flutter-action@v1
         with:
-          channel: ${{ env.flutter_channel }}
-          flutter-version: ${{ env.flutter_version }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
 
       ### test ###
       - name: test
-        run: ./scripts/test.sh
+        run: .github/workflows/scripts/test.sh
 
       - name: Codecov
         uses: codecov/codecov-action@v1
@@ -59,7 +61,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
           TAG_CONTEXT: branch
-          RELEASE_BRANCHES: ${{ (github.event.pull_request.base.ref == 'master' && 'master') || 'develop' }}
+          RELEASE_BRANCHES: ${{ (github.event.pull_request.base.ref == 'main' && 'main') || 'develop' }}
 
       - name: Create a Release
         id: create_release
@@ -83,16 +85,19 @@ jobs:
           git -c user.name="GitHub Actions" -c user.email="actions@github.com" commit -m "#minor" --allow-empty
           git push
 
-      ### slack ###
+      - name: calc build number
+        id: calc_build_number
+        run: echo "::set-output name=build_number::`git rev-list HEAD --count`"
+
+      ### Slack ###
       - name: action-slack
         uses: 8398a7/action-slack@v3
         if: success()
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
           fields: repo,commit,job,took,workflow
-          mention: ${{ env.slack_mention }}
+          mention: ${{ env.SLACK_MENTION }}
           if_mention: always
           status: ${{ job.status }}
           text: ":white_check_mark: `${{ steps.bump_tags.outputs.new_tag }}` is now ready for release at ${{ steps.create_release.outputs.html_url }}"
@@ -101,11 +106,10 @@ jobs:
         uses: 8398a7/action-slack@v3
         if: failure()
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
           fields: repo,commit,job,took,workflow
-          mention: ${{ env.slack_mention }}
+          mention: ${{ env.SLACK_MENTION }}
           if_mention: always
           status: ${{ job.status }}
           text: ":x: Failed to create a release."
@@ -115,170 +119,133 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest, self-hosted ]
-        version: [ dev, prod ]
+        os: [ubuntu-latest, macos-latest]
+        flavor: [dev, stg, prod]
+        include:
+          - os: ubuntu-latest
+            platform: Android
+            prepare_firebase_cli_script: .github/workflows/scripts/prepare_firebase_cli_linux.sh
+            upload_release_asset_path: ./build/app/outputs/flutter-apk/app-release.apk
+            upload_release_asset_path_store: ./build/app/outputs/bundle/release/app-release.aab
+            upload_release_asset_content_type: application/vnd.android.package-archive
+            upload_release_asset_content_type_store: application/octet-stream
+            firebase_app_distribution_file: ./build/app/outputs/flutter-apk/app-release.apk
+
+          - os: ubuntu-latest
+            flavor: dev
+            build_script: .github/workflows/scripts/buildAndroid.sh dev ${{ needs.release.outputs.build_name }} ${{ needs.release.outputs.build_number }}
+            upload_release_asset_name: Android_dev.apk
+            firebase_app_distribution_app_id: 1:636844036668:android:b09e49dce9d3527922a939 # FIXME
+            firebase_app_distribution_groups: Tester # FIXME
+
+          - os: ubuntu-latest
+            flavor: stg
+            build_script: .github/workflows/scripts/buildAndroid.sh stg ${{ needs.release.outputs.build_name }} ${{ needs.release.outputs.build_number }}
+            upload_release_asset_name: Android_stg.apk
+            firebase_app_distribution_app_id: 1:970978420457:android:d18cddc337585761bfb278 # FIXME
+            firebase_app_distribution_groups: Tester # FIXME
+
+          - os: ubuntu-latest
+            flavor: prod
+            build_script: .github/workflows/scripts/buildAndroid.sh prod ${{ needs.release.outputs.build_name }} ${{ needs.release.outputs.build_number }}
+            upload_release_asset_name: Android_prod.apk
+            upload_release_asset_name_store: Android_prod.aab
+            firebase_app_distribution_app_id: 1:1066701925010:android:51be10ae2c513cc9e3944b # FIXME
+            firebase_app_distribution_groups: Tester # FIXME
+
+          - os: macos-latest
+            platform: iOS
+            prepare_firebase_cli_script: .github/workflows/scripts/prepare_firebase_cli_macos.sh
+            upload_release_asset_path: ./build/ios/ipa.tar.gz
+            upload_release_asset_path_store: ./build/ios/appStore.tar.gz
+            upload_release_asset_content_type: application/octet-stream
+            upload_release_asset_content_type_store: application/octet-stream
+            firebase_app_distribution_file: ./build/ios/ipa/Runner.ipa
+
+          - os: macos-latest
+            flavor: dev
+            build_script: .github/workflows/scripts/prebuildiOS.sh && .github/workflows/scripts/buildiOS.sh dev ${{ needs.release.outputs.build_name }} ${{ needs.release.outputs.build_number }}
+            upload_release_asset_name: iOS_dev.ipa.tar.gz
+            firebase_app_distribution_app_id: 1:636844036668:ios:ccca644085de25c822a939 # FIXME
+            firebase_app_distribution_groups: Tester # FIXME
+
+          - os: macos-latest
+            flavor: stg
+            build_script: .github/workflows/scripts/prebuildiOS.sh && .github/workflows/scripts/buildiOS.sh stg ${{ needs.release.outputs.build_name }} ${{ needs.release.outputs.build_number }}
+            upload_release_asset_name: iOS_stg.ipa.tar.gz
+            firebase_app_distribution_app_id: 1:970978420457:ios:b7ecc1d711f47cd3bfb278 # FIXME
+            firebase_app_distribution_groups: Tester # FIXME
+
+          - os: macos-latest
+            flavor: prod
+            build_script: .github/workflows/scripts/prebuildiOS.sh && .github/workflows/scripts/buildiOS.sh prod ${{ needs.release.outputs.build_name }} ${{ needs.release.outputs.build_number }}
+            upload_release_asset_name: iOS_prod.ipa.tar.gz
+            upload_release_asset_name_store: iOS_prod_appStore.ipa.tar.gz
+            firebase_app_distribution_app_id: 1:1066701925010:ios:43c5707102329348e3944b # FIXME
+            firebase_app_distribution_groups: Tester # FIXME
     runs-on: ${{ matrix.os }}
     env:
-      app_id_android_dev: 1:TODO:android:TODO
-      app_id_android_prod: 1:TODO:android:TODO
-      app_id_ios_dev: 1:TODO:ios:TODO
-      app_id_ios_prod: 1:TODO:ios:TODO
-      app_distribution_groups_dev: TODO
-      app_distribution_groups_prod: TODO
+      MOBILEPROVISION_BASE64_DEV: ${{ secrets.MOBILEPROVISION_BASE64_DEV }}
+      MOBILEPROVISION_BASE64_STG: ${{ secrets.MOBILEPROVISION_BASE64_STG }}
+      MOBILEPROVISION_BASE64_PROD: ${{ secrets.MOBILEPROVISION_BASE64_PROD }}
+      MOBILEPROVISION_BASE64_APP_STORE: ${{ secrets.MOBILEPROVISION_BASE64_APP_STORE }}
+      P12_BASE64: ${{ secrets.P12_BASE64 }}
+      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
 
     steps:
-      ### setup ###
+      ### Set up ###
       - uses: actions/checkout@v2
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v1
         with:
-          fetch-depth: 0
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
 
-      - uses: subosito/flutter-action@v1
-        with:
-          channel: ${{ env.flutter_channel }}
-          flutter-version: ${{ env.flutter_version }}
+      - name: Set up Firebase CLI
+        run: ${{ matrix.prepare_firebase_cli_script }}
 
-      - name: calc build number
-        run: echo "build_number=`git rev-list HEAD --count`" >> $GITHUB_ENV
+      ### Build ###
+      - name: Build
+        run: ${{ matrix.build_script }}
 
-      - name: export releaseNote
-        run: echo "${{ needs.release.outputs.release_notes }}" > releaseNote.txt
-
-      ### deploy dev Android ###
-      - name: dev Android build
-        if: ${{ matrix.version == 'dev' && matrix.os == 'ubuntu-latest' }}
-        run: |
-          echo "target=dev-Android" >> $GITHUB_ENV
-          ./scripts/buildAndroid.sh dev ${{ needs.release.outputs.build_name }} ${{ env.build_number }}
-
-      - name: dev Android Upload Release Asset
-        if: ${{ matrix.version == 'dev' && matrix.os == 'ubuntu-latest' }}
+      ### Upload ###
+      - name: Upload Release Asserts
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: ./build/app/outputs/flutter-apk/app-release.apk
-          asset_name: Android_dev.apk
-          asset_content_type: application/vnd.android.package-archive
+          asset_path: ${{ matrix.upload_release_asset_path }}
+          asset_name: ${{ matrix.upload_release_asset_name }}
+          asset_content_type: ${{ matrix.upload_release_asset_content_type }}
 
-      - name: dev Android Firebase App Distribution
-        if: ${{ matrix.version == 'dev' && matrix.os == 'ubuntu-latest' }}
-        uses: w9jds/firebase-action@v2.0.0
+      - name: Upload Release Asserts for Store
+        if: ${{ matrix.flavor == 'prod' }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: ${{ matrix.upload_release_asset_path_store }}
+          asset_name: ${{ matrix.upload_release_asset_name_store }}
+          asset_content_type: ${{ matrix.upload_release_asset_content_type_store }}
+
+      - name: Firebase App Distribution
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-          file: ./build/app/outputs/flutter-apk/app-release.apk
-          releaseNotesFile: ./releaseNote.txt
-        with:
-          args: appdistribution:distribute --app $app_id_android_dev --release-notes-file $releaseNotesFile --groups $app_distribution_groups_dev $file
-
-      ### deploy dev iOS ###
-      - name: dev ios build
-        if: ${{ matrix.version == 'dev' && matrix.os == 'self-hosted' }}
         run: |
-          echo "target=dev-iOS" >> $GITHUB_ENV
-          ./scripts/buildiOS.sh dev ${{ needs.release.outputs.build_name }} ${{ env.build_number }}
+          firebase appdistribution:distribute \
+            --app ${{ matrix.firebase_app_distribution_app_id }} \
+            --release-notes "${{ needs.release.outputs.release_notes }}" \
+            --groups ${{ matrix.firebase_app_distribution_groups }} \
+            ${{ matrix.firebase_app_distribution_file }}
 
-      - name: dev iOS Upload Release Asset
-        if: ${{ matrix.version == 'dev' && matrix.os == 'self-hosted' }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: ./build/archive.xcarchive.tar.gz
-          asset_name: iOS_dev.xcarchive.tar.gz
-          asset_content_type: application/octet-stream
-
-      - name: dev iOS Firebase App Distribution
-        if: ${{ matrix.version == 'dev' && matrix.os == 'self-hosted' }}
-        env:
-          token: ${{ secrets.FIREBASE_TOKEN }}
-          file: ./build/export/Runner.ipa
-          releaseNotesFile: ./releaseNote.txt
-        run: firebase --token $token appdistribution:distribute --app $app_id_ios_dev --release-notes-file $releaseNotesFile --groups $app_distribution_groups_dev $file
-
-      ### deploy prod Android ###
-      - name: prod android build
-        if: ${{ matrix.version == 'prod' && matrix.os == 'ubuntu-latest' }}
-        run: |
-          echo "target=prod-Android" >> $GITHUB_ENV
-          ./scripts/buildAndroid.sh prod ${{ needs.release.outputs.build_name }} ${{ env.build_number }}
-
-      - name: prod Android Upload Release Asset
-        if: ${{ matrix.version == 'prod' && matrix.os == 'ubuntu-latest' }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: ./build/app/outputs/flutter-apk/app-release.apk
-          asset_name: Android_prod.apk
-          asset_content_type: application/vnd.android.package-archive
-
-      - name: prod Android Upload Release Asset
-        if: ${{ matrix.version == 'prod' && matrix.os == 'ubuntu-latest' }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: ./build/app/outputs/bundle/release/app-release.aab
-          asset_name: Android_prod.aab
-          asset_content_type: application/octet-stream
-
-      - name: prod Android Firebase App Distribution
-        if: ${{ matrix.version == 'prod' && matrix.os == 'ubuntu-latest' }}
-        uses: w9jds/firebase-action@v2.0.0
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-          file: ./build/app/outputs/flutter-apk/app-release.apk
-          releaseNotesFile: ./releaseNote.txt
-        with:
-          args: appdistribution:distribute --app $app_id_android_prod --release-notes-file $releaseNotesFile --groups $app_distribution_groups_prod $file
-
-      ### deploy prod iOS ###
-      - name: prod ios build
-        if: ${{ matrix.version == 'prod' && matrix.os == 'self-hosted' }}
-        run: |
-          echo "target=prod-iOS" >> $GITHUB_ENV
-          ./scripts/buildiOS.sh prod ${{ needs.release.outputs.build_name }} ${{ env.build_number }}
-
-      - name: prod iOS Upload Release Asset
-        if: ${{ matrix.version == 'prod' && matrix.os == 'self-hosted' }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: ./build/archive.xcarchive.tar.gz
-          asset_name: iOS_prod.xcarchive.tar.gz
-          asset_content_type: application/octet-stream
-
-      - name: prod iOS Upload Release Asset
-        if: ${{ matrix.version == 'prod' && matrix.os == 'self-hosted' }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: ./build/export/appStore.tar.gz
-          asset_name: iOS_prod_ipa.tar.gz
-          asset_content_type: application/octet-stream
-
-      - name: prod iOS Firebase App Distribution
-        if: ${{ matrix.version == 'prod' && matrix.os == 'self-hosted' }}
-        env:
-          token: ${{ secrets.FIREBASE_TOKEN }}
-          file: ./build/export/Runner.ipa
-          releaseNotesFile: ./releaseNote.txt
-        run: firebase --token $token appdistribution:distribute --app $app_id_ios_prod --release-notes-file $releaseNotesFile --groups $app_distribution_groups_prod $file
-
-      ### slack ###
+      ### Slack ###
       - name: action-slack
         uses: 8398a7/action-slack@v3
         if: success()
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
         with:
@@ -287,13 +254,11 @@ jobs:
           if_mention: always
           status: ${{ job.status }}
           text: |
-            :rocket: The release of `${{ needs.release.outputs.build_name }}+${{ env.build_number }}` for `${{ env.target }}` has been completed.
-
+            :rocket: The release of `${{ needs.release.outputs.build_name }}+${{ needs.release.outputs.build_number }}` for `${{ matrix.flavor }}-${{ matrix.platform }}` has been completed.
       - name: action-slack
         uses: 8398a7/action-slack@v3
         if: failure()
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
         with:
@@ -302,4 +267,4 @@ jobs:
           if_mention: always
           status: ${{ job.status }}
           text: |
-            :boom: The release of `${{ needs.release.outputs.build_name }}+${{ env.build_number }}` for `${{ env.target }}` has been failed.
+            :boom: The release of `${{ needs.release.outputs.build_name }}+${{ needs.release.outputs.build_number }}` for `${{ matrix.flavor }}-${{ matrix.platform }}` has been failed.
