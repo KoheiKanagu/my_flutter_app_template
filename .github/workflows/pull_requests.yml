@@ -1,28 +1,31 @@
 name: Pull Requests
 
-on: [ pull_request ]
+on:
+  - pull_request
 
 env:
-  slack_mention: 'TODO' #メンバーID
-  flutter_channel: 'TODO'
-  flutter_version: 'TODO'
+  SLACK_MENTION: "UQ0KVAQ6T" #メンバーID # FIXME
+  FLUTTER_CHANNEL: "stable" # FIXME
+  FLUTTER_VERSION: "2.0.6" # FIXME
 
 jobs:
   build:
-    runs-on: [ ubuntu-latest ]
+    runs-on: ubuntu-latest
 
     steps:
-      ### setup ###
+      ### Set up ###
       - uses: actions/checkout@v2
+
       - uses: subosito/flutter-action@v1
         with:
-          channel: ${{ env.flutter_channel }}
-          flutter-version: ${{ env.flutter_version }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
       - run: flutter pub get
 
       ### test ###
       - name: test
-        run: ./scripts/test.sh
+        run: .github/workflows/scripts/test.sh
 
       - name: Codecov
         uses: codecov/codecov-action@v1
@@ -32,15 +35,14 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: coverage/lcov.info
 
-      ### slack ###
+      ### Slack ###
       - name: action-slack
         uses: 8398a7/action-slack@v3
         if: always()
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
           fields: repo,commit,job,took,workflow
-          mention: ${{ env.slack_mention }}
+          mention: ${{ env.SLACK_MENTION }}
           if_mention: always
           status: ${{ job.status }}

@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:firebase_admob/firebase_admob.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -11,7 +9,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:hooks_riverpod/all.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logger/logger.dart';
 
 const name = String.fromEnvironment('APP_NAME', defaultValue: 'unknownName');
@@ -30,7 +29,7 @@ enum Flavor {
 extension FlavorExtension on Flavor {
   String get projectID {
     switch (this) {
-      // FIXME(you): project id
+      // TODO(you): project id
       case Flavor.dev:
         return 'project-dev';
       case Flavor.stg:
@@ -38,7 +37,6 @@ extension FlavorExtension on Flavor {
       case Flavor.prod:
         return 'project-prod';
     }
-    throw FallThroughError();
   }
 
   static Flavor fromString(String value) {
@@ -63,18 +61,13 @@ Future<void> main() async {
       .setCrashlyticsCollectionEnabled(kReleaseMode);
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
 
-  if (Platform.isIOS) {
-    // FIXME: (you) fix appId
-    await FirebaseAdMob.instance.initialize(appId: FirebaseAdMob.testAppId);
-  } else if (Platform.isAndroid) {
-    // FIXME: (you) fix appId
-    await FirebaseAdMob.instance.initialize(appId: FirebaseAdMob.testAppId);
-  }
+  // TODO(you): if you need
+  await MobileAds.instance.initialize();
 
   runZonedGuarded(
     () {
       runApp(
-        ProviderScope(
+        const ProviderScope(
           child: MyApp(),
         ),
       );
@@ -94,7 +87,7 @@ void _validateProjectId() {
 }
 
 class MyApp extends StatefulHookWidget {
-  const MyApp({Key key}) : super(key: key);
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   _MyAppState createState() => _MyAppState();
@@ -123,16 +116,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     );
   }
 
-    
   @override
   void initState() {
-    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance!.addObserver(this);
     super.initState();
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    WidgetsBinding.instance!.removeObserver(this);
     super.dispose();
   }
 
@@ -164,7 +156,7 @@ class MyRouter {
     return MaterialPageRoute(
       builder: (_) => Scaffold(
         appBar: AppBar(
-          title: Text('hello'),
+          title: const Text('hello'),
         ),
       ),
       settings: const RouteSettings(
@@ -174,17 +166,100 @@ class MyRouter {
   }
 }
 
-final logger = Logger(
-  output: _ConsoleOutputWithCrashlytics(),
-  printer: appFlavor == Flavor.prod && kReleaseMode
-      ? MyCrashlyticsLogPrinter()
-      : PrettyPrinter(
-          colors: false,
-          printTime: true,
-          errorMethodCount: 4,
-        ),
-  filter: _LogFilter(),
-);
+final logger = MyLogger();
+
+class MyLogger extends Logger {
+  final simpleLogger = Logger(
+    output: _ConsoleOutputWithCrashlytics(),
+    printer: kReleaseMode
+        ? MyCrashlyticsLogPrinter()
+        : SimplePrinter(
+            printTime: true,
+            colors: false,
+          ),
+    filter: _LogFilter(),
+  );
+
+  final errorLogger = Logger(
+    output: _ConsoleOutputWithCrashlytics(),
+    printer: kReleaseMode
+        ? MyCrashlyticsLogPrinter()
+        : PrettyPrinter(
+            colors: false,
+            printTime: true,
+            errorMethodCount: 6,
+          ),
+    filter: _LogFilter(),
+  );
+
+  void debug(String message, [dynamic object]) {
+    final trace = _getSimpleTrace();
+    if (object == null) {
+      simpleLogger.d('TRACE:[ $trace ] MESSAGE:[$message]');
+    } else {
+      simpleLogger.d('TRACE:[ $trace ] MESSAGE:[$message] OBJECT:[$object]');
+    }
+  }
+
+  void debugSecret(String message, [dynamic object]) {
+    if (appFlavor != Flavor.prod) {
+      final trace = _getSimpleTrace();
+      if (object == null) {
+        simpleLogger.d('TRACE:[ $trace ] MESSAGE:[$message]');
+      } else {
+        simpleLogger.d('TRACE:[ $trace ] MESSAGE:[$message] OBJECT:[$object]');
+      }
+    }
+  }
+
+  void info(String message, [dynamic object]) {
+    final trace = _getSimpleTrace();
+
+    if (object == null) {
+      simpleLogger.i('TRACE:[ $trace ] MESSAGE:[$message]');
+    } else {
+      simpleLogger.i('TRACE:[ $trace ] MESSAGE:[$message] OBJECT:[$object]');
+    }
+  }
+
+  String _getSimpleTrace() => StackTrace.current
+      .toString()
+      .split('\n')[2]
+      .replaceFirst(RegExp(r'#\d *'), '');
+
+  void warning(String message, dynamic error, StackTrace stackTrace) {
+    if (Firebase.apps.isNotEmpty) {
+      FirebaseCrashlytics.instance.recordError('$message, $error', stackTrace);
+    }
+    errorLogger.w(message, error, stackTrace);
+  }
+
+  void error(String message, dynamic error, StackTrace stackTrace) {
+    if (Firebase.apps.isNotEmpty) {
+      FirebaseCrashlytics.instance.recordError('$message, $error', stackTrace);
+    }
+    errorLogger.e(message, error, stackTrace);
+  }
+
+  void initFirebaseCrashlytics() {
+    FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(kReleaseMode);
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
+  }
+
+  void setUserEmail(String email) =>
+      FirebaseCrashlytics.instance.setCustomKey('email', email);
+
+  void setUserIdentifier(String identifier) =>
+      FirebaseCrashlytics.instance.setUserIdentifier(identifier);
+
+  void setInstallId(int value) {
+    FirebaseCrashlytics.instance.setCustomKey('installId', '$value');
+  }
+
+  void setPowerSaveModeStatus(String value) {
+    FirebaseCrashlytics.instance.setCustomKey('PowerSaveModeStatus', value);
+  }
+}
 
 class MyCrashlyticsLogPrinter extends LogPrinter {
   static final levelPrefixes = {
@@ -221,30 +296,6 @@ class MyCrashlyticsLogPrinter extends LogPrinter {
   }
 }
 
-extension LoggerExtension on Logger {
-  void debug(String message, dynamic object, StackTrace stackTrace) {
-    logger.d(message, object, stackTrace);
-  }
-
-  void info(String message, dynamic object, StackTrace stackTrace) {
-    logger.i(message, object, stackTrace);
-  }
-
-  void warning(String message, dynamic error, StackTrace stackTrace) {
-    if (Firebase.apps.isNotEmpty) {
-      FirebaseCrashlytics.instance.recordError('$message, $error', stackTrace);
-    }
-    logger.w(message, error, stackTrace);
-  }
-
-  void error(String message, dynamic error, StackTrace stackTrace) {
-    if (Firebase.apps.isNotEmpty) {
-      FirebaseCrashlytics.instance.recordError('$message, $error', stackTrace);
-    }
-    logger.e(message, error, stackTrace);
-  }
-}
-
 class _LogFilter extends LogFilter {
   @override
   bool shouldLog(LogEvent event) => true;
@@ -275,6 +326,6 @@ class _ConsoleOutputWithCrashlytics extends LogOutput {
   }
 }
 
-final myRouterProvider = Provider<MyRouter>(
+final myRouterProvider = Provider(
   (ref) => MyRouter(ref.read),
 );

@@ -1,0 +1,63 @@
+name: Manual build
+
+on:
+  workflow_dispatch:
+    inputs:
+      buildEnv:
+        description: "実行するフレーバー"
+        required: false
+        default: "dev"
+
+env:
+  SLACK_MENTION: "UQ0KVAQ6T" #メンバーID # FIXME
+  FLUTTER_CHANNEL: "stable" # FIXME
+  FLUTTER_VERSION: "2.0.6" # FIXME
+  MOBILEPROVISION_BASE64_DEV: ${{ secrets.MOBILEPROVISION_BASE64_DEV }}
+  MOBILEPROVISION_BASE64_STG: ${{ secrets.MOBILEPROVISION_BASE64_STG }}
+  MOBILEPROVISION_BASE64_PROD: ${{ secrets.MOBILEPROVISION_BASE64_PROD }}
+  MOBILEPROVISION_BASE64_APP_STORE: ${{ secrets.MOBILEPROVISION_BASE64_APP_STORE }}
+  P12_BASE64: ${{ secrets.P12_BASE64 }}
+  P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            build_script: .github/workflows/scripts/buildAndroid.sh dev 1.2.3 100
+          - os: macos-latest
+            build_script: .github/workflows/scripts/prebuildiOS.sh && .github/workflows/scripts/buildiOS.sh dev 1.2.3 100
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      ### Set up ###
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+      - run: flutter pub get
+
+      ### Build ###
+      - name: Build
+        run: ${{ matrix.build_script }}
+
+      ### Slack ###
+      - name: action-slack
+        uses: 8398a7/action-slack@v3
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          MATRIX_CONTEXT: ${{ toJson(matrix) }}
+        with:
+          fields: repo,commit,job,took,workflow
+          mention: ${{ env.SLACK_MENTION }}
+          if_mention: always
+          status: ${{ job.status }}

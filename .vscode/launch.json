@@ -12,7 +12,8 @@
       "args": [
         "--dart-define=APP_NAME=devアプリ",
         "--dart-define=APP_SUFFIX=.dev",
-        "--dart-define=APP_ENV=dev"
+        "--dart-define=APP_ENV=dev",
+        "--dart-define=APP_ASSOCIATED_DOMAIN=applinks:com.example.page.link"
       ]
     },
     {
@@ -23,7 +24,8 @@
       "args": [
         "--dart-define=APP_NAME=stgアプリ",
         "--dart-define=APP_SUFFIX=.stg",
-        "--dart-define=APP_ENV=stg"
+        "--dart-define=APP_ENV=stg",
+        "--dart-define=APP_ASSOCIATED_DOMAIN=applinks:com.example.page.link"
       ]
     },
     {
@@ -33,7 +35,8 @@
       "type": "dart",
       "args": [
         "--dart-define=APP_NAME=prodアプリ",
-        "--dart-define=APP_ENV=prod"
+        "--dart-define=APP_ENV=prod",
+        "--dart-define=APP_ASSOCIATED_DOMAIN=applinks:com.example.page.link"
       ]
     }
   ]
