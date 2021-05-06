@@ -45,9 +45,7 @@ jobs:
           - os: macos-latest
             flavor: prod
             build_script: .github/workflows/scripts/prebuildiOS.sh && .github/workflows/scripts/buildiOS.sh prod 1.2.3 100
-
     runs-on: ${{ matrix.os }}
-
     steps:
       ### Set up ###
       - uses: actions/checkout@v2
@@ -68,7 +66,7 @@ jobs:
         if: always()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          MATRIX_CONTEXT: ${{ toJson(matrix) }}
+          MATRIX_CONTEXT: '{"os": "${{ matrix.os }}", "flavor": "${{ matrix.flavor }}" }'
         with:
           fields: repo,commit,job,took,workflow
           mention: ${{ env.SLACK_MENTION }}
