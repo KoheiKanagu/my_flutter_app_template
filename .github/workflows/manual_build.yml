@@ -1,12 +1,7 @@
 name: Manual build
 
 on:
-  workflow_dispatch:
-    inputs:
-      buildEnv:
-        description: "実行するフレーバー"
-        required: false
-        default: "dev"
+  - workflow_dispatch
 
 env:
   SLACK_MENTION: "UQ0KVAQ6T" #メンバーID # FIXME
@@ -25,19 +20,37 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
+        flavor: [dev, stg, prod]
         include:
           - os: ubuntu-latest
-            build_script: .github/workflows/scripts/buildAndroid.sh ${{ github.event.inputs.buildEnv }} 1.2.3 100
+            flavor: dev
+            build_script: .github/workflows/scripts/buildAndroid.sh dev 1.2.3 100
+
+          - os: ubuntu-latest
+            flavor: stg
+            build_script: .github/workflows/scripts/buildAndroid.sh stg 1.2.3 100
+
+          - os: ubuntu-latest
+            flavor: prod
+            build_script: .github/workflows/scripts/buildAndroid.sh prod 1.2.3 100
+
           - os: macos-latest
-            build_script: .github/workflows/scripts/prebuildiOS.sh && .github/workflows/scripts/buildiOS.sh ${{ github.event.inputs.buildEnv }} 1.2.3 100
+            flavor: dev
+            build_script: .github/workflows/scripts/prebuildiOS.sh && .github/workflows/scripts/buildiOS.sh dev 1.2.3 100
+
+          - os: macos-latest
+            flavor: stg
+            build_script: .github/workflows/scripts/prebuildiOS.sh && .github/workflows/scripts/buildiOS.sh stg 1.2.3 100
+
+          - os: macos-latest
+            flavor: prod
+            build_script: .github/workflows/scripts/prebuildiOS.sh && .github/workflows/scripts/buildiOS.sh prod 1.2.3 100
 
     runs-on: ${{ matrix.os }}
 
     steps:
       ### Set up ###
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
       - uses: subosito/flutter-action@v1
         with:
