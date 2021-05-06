@@ -64,24 +64,25 @@ android {
     defaultConfig {
         applicationIdSuffix dartEnvironmentVariables.APP_SUFFIX
         resValue "string", "app_name", dartEnvironmentVariables.APP_NAME
-        minSdkVersion 16
+        minSdkVersion 24
         targetSdkVersion 30
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
     }
 
-    buildTypes {
-        release {
-            signingConfig signingConfigs.release
-        }
-    }
     signingConfigs {
         release {
             storeFile file("release.keystore")
             storePassword "android"
             keyAlias "key0"
             keyPassword "android"
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
         }
     }
 }
