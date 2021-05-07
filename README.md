@@ -2,4 +2,4 @@
 
 Flutterアプリを作るときのテンプレスクリプトなど
 
-詳細は[こちら](https://qiita.com/KoheiKanagu/items/516f43686b3f96fc3022)
+詳細は[こちら](https://zenn.dev/kingu/articles/9192b91062841b8e0bba)
