@@ -23,6 +23,14 @@ jobs:
         flavor: [dev, stg, prod]
         include:
           - os: ubuntu-latest
+            platform: Android
+            flutter_path: /opt/hostedtoolcache/flutter
+
+          - os: macos-latest
+            platform: iOS
+            flutter_path: /Users/runner/hostedtoolcache/flutter
+
+          - os: ubuntu-latest
             flavor: dev
             build_script: .github/workflows/scripts/buildAndroid.sh dev 1.2.3 100
 
@@ -50,10 +58,37 @@ jobs:
       ### Set up ###
       - uses: actions/checkout@v2
 
+      - name: Flutter Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ matrix.flutter_path }}
+          key: ${{ runner.os }}-flutter-${{ env.FLUTTER_CHANNEL }}-${{ env.FLUTTER_VERSION }}
+
+      - name: CocoaPods Cache
+        uses: actions/cache@v2
+        if: ${{ matrix.platform == 'iOS' }}
+        with:
+          path: ./ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Gradle Cache
+        uses: actions/cache@v2
+        if: ${{ matrix.platform == 'Android' }}
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - uses: subosito/flutter-action@v1
         with:
           channel: ${{ env.FLUTTER_CHANNEL }}
           flutter-version: ${{ env.FLUTTER_VERSION }}
+
       - run: flutter pub get
 
       ### Build ###
