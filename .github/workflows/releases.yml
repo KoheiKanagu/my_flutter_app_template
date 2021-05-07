@@ -29,6 +29,22 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Flutter Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ matrix.flutter_path }}
+          key: ${{ runner.os }}-flutter-${{ env.FLUTTER_CHANNEL }}-${{ env.FLUTTER_VERSION }}
+
+      - name: Gradle Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       - uses: subosito/flutter-action@v1
         with:
           channel: ${{ env.FLUTTER_CHANNEL }}
@@ -192,6 +208,32 @@ jobs:
     steps:
       ### Set up ###
       - uses: actions/checkout@v2
+
+      - name: Flutter Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ matrix.flutter_path }}
+          key: ${{ runner.os }}-flutter-${{ env.FLUTTER_CHANNEL }}-${{ env.FLUTTER_VERSION }}
+
+      - name: CocoaPods Cache
+        uses: actions/cache@v2
+        if: ${{ matrix.platform == 'iOS' }}
+        with:
+          path: ./ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Gradle Cache
+        uses: actions/cache@v2
+        if: ${{ matrix.platform == 'Android' }}
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v1
