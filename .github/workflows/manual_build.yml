@@ -75,6 +75,7 @@ jobs:
 
       - name: Gradle Cache
         uses: actions/cache@v2
+        if: ${{ matrix.platform == 'Android' }}
         with:
           path: |
             ~/.gradle/caches
