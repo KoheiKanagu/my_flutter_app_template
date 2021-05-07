@@ -87,6 +87,7 @@ jobs:
         with:
           channel: ${{ env.FLUTTER_CHANNEL }}
           flutter-version: ${{ env.FLUTTER_VERSION }}
+
       - run: flutter pub get
 
       ### Build ###
