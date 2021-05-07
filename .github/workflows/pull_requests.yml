@@ -19,7 +19,7 @@ jobs:
       - name: Flutter Cache
         uses: actions/cache@v2
         with:
-          path: ${{ matrix.flutter_path }}
+          path: /opt/hostedtoolcache/flutter
           key: ${{ runner.os }}-flutter-${{ env.FLUTTER_CHANNEL }}-${{ env.FLUTTER_VERSION }}
 
       - name: Gradle Cache

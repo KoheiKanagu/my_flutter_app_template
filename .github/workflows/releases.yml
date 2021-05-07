@@ -32,7 +32,7 @@ jobs:
       - name: Flutter Cache
         uses: actions/cache@v2
         with:
-          path: ${{ matrix.flutter_path }}
+          path: /opt/hostedtoolcache/flutter
           key: ${{ runner.os }}-flutter-${{ env.FLUTTER_CHANNEL }}-${{ env.FLUTTER_VERSION }}
 
       - name: Gradle Cache
@@ -143,6 +143,7 @@ jobs:
             upload_release_asset_content_type: application/vnd.android.package-archive
             upload_release_asset_content_type_store: application/octet-stream
             firebase_app_distribution_file: ./build/app/outputs/flutter-apk/app-release.apk
+            flutter_path: /opt/hostedtoolcache/flutter
 
           - os: ubuntu-latest
             flavor: dev
@@ -174,6 +175,7 @@ jobs:
             upload_release_asset_content_type: application/octet-stream
             upload_release_asset_content_type_store: application/octet-stream
             firebase_app_distribution_file: ./build/ios/ipa/Runner.ipa
+            flutter_path: /Users/runner/hostedtoolcache/flutter
 
           - os: macos-latest
             flavor: dev
