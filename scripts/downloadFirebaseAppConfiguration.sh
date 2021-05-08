@@ -1,6 +1,5 @@
 #!/bin/bash -eu
 # Flutterのプロジェクトルートで実行すること
-# 詳細: https://qiita.com/KoheiKanagu/items/516f43686b3f96fc3022#%E6%A7%8B%E6%88%90%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB
 
 function fetchAndroid() {
   JSON_PATH=android/app/google-services-$1.json
