@@ -9,7 +9,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logger/logger.dart';
 
@@ -61,8 +60,7 @@ Future<void> main() async {
       .setCrashlyticsCollectionEnabled(kReleaseMode);
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
 
-  // FIXME(you): if you need
-  await MobileAds.instance.initialize();
+  // await MobileAds.instance.initialize();
 
   runZonedGuarded(
     () {
