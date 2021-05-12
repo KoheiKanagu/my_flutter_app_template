@@ -1,5 +1,5 @@
 PODS:
-  - cloud_firestore (2.0.0):
+  - cloud_firestore (2.1.0):
     - Firebase/Firestore (= 7.11.0)
     - firebase_core
     - Flutter
@@ -19,14 +19,14 @@ PODS:
   - Firebase/Performance (7.11.0):
     - Firebase/CoreOnly
     - FirebasePerformance (~> 7.11.0)
-  - firebase_analytics (8.0.3):
+  - firebase_analytics (8.0.4):
     - Firebase/Analytics (= 7.11.0)
     - firebase_core
     - Flutter
-  - firebase_core (1.1.0):
+  - firebase_core (1.1.1):
     - Firebase/CoreOnly (= 7.11.0)
     - Flutter
-  - firebase_crashlytics (2.0.2):
+  - firebase_crashlytics (2.0.3):
     - Firebase/Crashlytics (= 7.11.0)
     - firebase_core
     - Flutter
@@ -100,19 +100,6 @@ PODS:
     - GoogleUtilities/Environment (~> 7.0)
     - "GoogleUtilities/NSData+zlib (~> 7.0)"
   - Flutter (1.0.0)
-  - Google-Mobile-Ads-SDK (7.69.0):
-    - GoogleAppMeasurement (~> 7.0)
-    - GoogleUserMessagingPlatform (~> 1.1)
-  - google_mobile_ads (0.0.1):
-    - Flutter
-    - Google-Mobile-Ads-SDK (= 7.69.0)
-  - GoogleAppMeasurement (7.11.0):
-    - GoogleAppMeasurement/AdIdSupport (= 7.11.0)
-    - GoogleUtilities/AppDelegateSwizzler (~> 7.0)
-    - GoogleUtilities/MethodSwizzler (~> 7.0)
-    - GoogleUtilities/Network (~> 7.0)
-    - "GoogleUtilities/NSData+zlib (~> 7.0)"
-    - nanopb (~> 2.30908.0)
   - GoogleAppMeasurement/AdIdSupport (7.11.0):
     - GoogleUtilities/AppDelegateSwizzler (~> 7.0)
     - GoogleUtilities/MethodSwizzler (~> 7.0)
@@ -123,7 +110,6 @@ PODS:
     - GoogleUtilities/Environment (~> 7.2)
     - nanopb (~> 2.30908.0)
     - PromisesObjC (~> 1.2)
-  - GoogleUserMessagingPlatform (1.4.0)
   - GoogleUtilities/AppDelegateSwizzler (7.4.0):
     - GoogleUtilities/Environment
     - GoogleUtilities/Logger
@@ -160,7 +146,6 @@ DEPENDENCIES:
   - firebase_performance (from `.symlinks/plugins/firebase_performance/ios`)
   - FirebaseFirestore (from `https://github.com/invertase/firestore-ios-sdk-frameworks.git`, tag `7.11.0`)
   - Flutter (from `Flutter`)
-  - google_mobile_ads (from `.symlinks/plugins/google_mobile_ads/ios`)
 
 SPEC REPOS:
   trunk:
@@ -173,10 +158,8 @@ SPEC REPOS:
     - FirebaseInstallations
     - FirebasePerformance
     - FirebaseRemoteConfig
-    - Google-Mobile-Ads-SDK
     - GoogleAppMeasurement
     - GoogleDataTransport
-    - GoogleUserMessagingPlatform
     - GoogleUtilities
     - nanopb
     - PromisesObjC
@@ -198,8 +181,6 @@ EXTERNAL SOURCES:
     :tag: 7.11.0
   Flutter:
     :path: Flutter
-  google_mobile_ads:
-    :path: ".symlinks/plugins/google_mobile_ads/ios"
 
 CHECKOUT OPTIONS:
   FirebaseFirestore:
@@ -207,11 +188,11 @@ CHECKOUT OPTIONS:
     :tag: 7.11.0
 
 SPEC CHECKSUMS:
-  cloud_firestore: 01f3fc4bb5c46b400a329320ea7f61a73817a657
+  cloud_firestore: d40d713b447c39e4e5c1478cee269b2f2dc9cb99
   Firebase: c121feb35e4126c0b355e3313fa9b487d47319fd
-  firebase_analytics: 1212d578d019d82c6301bc64c818ef54abe385e4
-  firebase_core: 84dcd80ac6d29c3d1039071b7306ee99688eb9c7
-  firebase_crashlytics: 1bf37e6bace6394a2bab8f316de395f49a836189
+  firebase_analytics: 2d95c809fde5c606276a51b9cdc591a7ba44e1f2
+  firebase_core: 54856a8a39b8f3e35f34fdd3373f3b92a1daa68b
+  firebase_crashlytics: 1e72fe7a913faa6bc73f75794a5f68947e26623e
   firebase_performance: ea41ee3644e690e5bd7bd9ff9e6297dfa70e8400
   FirebaseABTesting: e66f1f80747792630d9b292966de206d5df9853b
   FirebaseAnalytics: cd3bd84d722a24a8923918af8af8e5236f615d77
@@ -223,11 +204,8 @@ SPEC CHECKSUMS:
   FirebasePerformance: 3166d0c16b359b1ef92be774f46f2768b98c8993
   FirebaseRemoteConfig: 0ea30de5fb0231df8c1bdcdf3b6c23bdc5066131
   Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
-  Google-Mobile-Ads-SDK: 2f288748a42920d1c744946a460896a95b0e9110
-  google_mobile_ads: 126e0785d3b0bd36d52ff331c19b8d8162407843
   GoogleAppMeasurement: fd19169c3034975cb934e865e5667bfdce59df7f
   GoogleDataTransport: cd9db2180fcecd8da1b561aea31e3e56cf834aa7
-  GoogleUserMessagingPlatform: b168e8c46cd8f92aa3e34b584c4ca78a411ce367
   GoogleUtilities: 284cddc7fffc14ae1907efb6f78ab95c1fccaedc
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   PromisesObjC: 3113f7f76903778cf4a0586bd1ab89329a0b7b97
