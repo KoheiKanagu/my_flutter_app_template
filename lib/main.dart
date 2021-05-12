@@ -9,7 +9,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logger/logger.dart';
 
@@ -29,13 +28,13 @@ enum Flavor {
 extension FlavorExtension on Flavor {
   String get projectID {
     switch (this) {
-      // TODO(you): project id
+      // FIXME(you): project id
       case Flavor.dev:
-        return 'project-dev';
+        return 'my-flutter-app-template-dev';
       case Flavor.stg:
-        return 'project-stg';
+        return 'my-flutter-app-template-stg';
       case Flavor.prod:
-        return 'project-prod';
+        return 'my-flutter-app-template-prod';
     }
   }
 
@@ -61,8 +60,7 @@ Future<void> main() async {
       .setCrashlyticsCollectionEnabled(kReleaseMode);
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
 
-  // TODO(you): if you need
-  await MobileAds.instance.initialize();
+  // await MobileAds.instance.initialize();
 
   runZonedGuarded(
     () {
