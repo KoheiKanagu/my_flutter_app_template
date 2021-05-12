@@ -29,13 +29,13 @@ enum Flavor {
 extension FlavorExtension on Flavor {
   String get projectID {
     switch (this) {
-      // TODO(you): project id
+      // FIXME(you): project id
       case Flavor.dev:
-        return 'project-dev';
+        return 'my-flutter-app-template-dev';
       case Flavor.stg:
-        return 'project-stg';
+        return 'my-flutter-app-template-stg';
       case Flavor.prod:
-        return 'project-prod';
+        return 'my-flutter-app-template-prod';
     }
   }
 
@@ -61,7 +61,7 @@ Future<void> main() async {
       .setCrashlyticsCollectionEnabled(kReleaseMode);
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
 
-  // TODO(you): if you need
+  // FIXME(you): if you need
   await MobileAds.instance.initialize();
 
   runZonedGuarded(

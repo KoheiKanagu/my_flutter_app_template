@@ -38,9 +38,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-#   assets:
-#     - assets/icon/
-flutter_icons:
-  android: "ic_launcher"
-  image_path: "assets/icon/icon.png"
-  ios: true
+  assets:
+    - assets/
