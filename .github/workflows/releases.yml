@@ -206,6 +206,7 @@ jobs:
       MOBILEPROVISION_BASE64_APP_STORE: ${{ secrets.MOBILEPROVISION_BASE64_APP_STORE }}
       P12_BASE64: ${{ secrets.P12_BASE64 }}
       P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+      KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
 
     steps:
       ### Set up ###
