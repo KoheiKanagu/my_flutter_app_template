@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -eu
 
 mobileprovisions=(
     "$MOBILEPROVISION_BASE64_DEV"
@@ -11,8 +11,10 @@ for e in "${mobileprovisions[@]}"; do
     if [ -z $e ]; then
         echo "skip"
     else
-        echo $e | base64 -d >target.mobileprovision
-        fastlane run install_provisioning_profile path:"target.mobileprovision"
+        PP_PATH=build_ios_$RANDOM.mobileprovision
+        echo $e | base64 --decode --output $PP_PATH
+        echo "copy $PP_PATH"
+        cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
     fi
 done
 
@@ -25,7 +27,7 @@ fastlane run create_keychain \
     unlock:true \
     timeout:3600
 
-echo $P12_BASE64 | base64 -d >target.p12
+echo $P12_BASE64 | base64 --decode --output target.p12
 
 fastlane run import_certificate \
     certificate_path:'target.p12' \

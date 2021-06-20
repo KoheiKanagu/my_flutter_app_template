@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 
 if [ $# -ne 3 ]; then
-  echo "e.g. ./buildAndroid dev 1.2.3 100" 1>&2
+  echo "e.g. ./build_android dev 1.2.3 100" 1>&2
   exit 1
 fi
 

@@ -24,35 +24,39 @@ jobs:
         include:
           - os: ubuntu-latest
             platform: Android
+            prebuild_script: .github/workflows/scripts/prebuild_android.sh
+            postbuild_script: .github/workflows/scripts/postbuild_android.sh
             flutter_path: /opt/hostedtoolcache/flutter
 
           - os: macos-latest
             platform: iOS
+            prebuild_script: .github/workflows/scripts/prebuild_ios.sh
+            postbuild_script: .github/workflows/scripts/postbuild_ios.sh
             flutter_path: /Users/runner/hostedtoolcache/flutter
 
           - os: ubuntu-latest
             flavor: dev
-            build_script: .github/workflows/scripts/buildAndroid.sh dev 1.2.3 100
+            build_script: .github/workflows/scripts/build_android.sh dev 1.2.3 100
 
           - os: ubuntu-latest
             flavor: stg
-            build_script: .github/workflows/scripts/buildAndroid.sh stg 1.2.3 100
+            build_script: .github/workflows/scripts/build_android.sh stg 1.2.3 100
 
           - os: ubuntu-latest
             flavor: prod
-            build_script: .github/workflows/scripts/buildAndroid.sh prod 1.2.3 100
+            build_script: .github/workflows/scripts/build_android.sh prod 1.2.3 100
 
           - os: macos-latest
             flavor: dev
-            build_script: .github/workflows/scripts/prebuildiOS.sh && .github/workflows/scripts/buildiOS.sh dev 1.2.3 100
+            build_script: .github/workflows/scripts/buildiOS.sh dev 1.2.3 100
 
           - os: macos-latest
             flavor: stg
-            build_script: .github/workflows/scripts/prebuildiOS.sh && .github/workflows/scripts/buildiOS.sh stg 1.2.3 100
+            build_script: .github/workflows/scripts/buildiOS.sh stg 1.2.3 100
 
           - os: macos-latest
             flavor: prod
-            build_script: .github/workflows/scripts/prebuildiOS.sh && .github/workflows/scripts/buildiOS.sh prod 1.2.3 100
+            build_script: .github/workflows/scripts/buildiOS.sh prod 1.2.3 100
     runs-on: ${{ matrix.os }}
     steps:
       ### Set up ###
@@ -92,8 +96,16 @@ jobs:
       - run: flutter pub get
 
       ### Build ###
+
+      - name: Pre-Build
+        run: ${{ matrix.prebuild_script }}
+
       - name: Build
         run: ${{ matrix.build_script }}
+
+      - name: Post-Build
+        if: always()
+        run: ${{ matrix.postbuild_script }}
 
       ### Slack ###
       - name: Notify Slack
