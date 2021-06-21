@@ -183,21 +183,21 @@ jobs:
 
           - os: macos-latest
             flavor: dev
-            build_script: .github/workflows/scripts/buildiOS.sh dev ${{ needs.release.outputs.build_name }} ${{ needs.release.outputs.build_number }}
+            build_script: .github/workflows/scripts/build_ios.sh dev ${{ needs.release.outputs.build_name }} ${{ needs.release.outputs.build_number }}
             upload_release_asset_name: iOS_dev.ipa.tar.gz
             firebase_app_distribution_app_id: 1:636844036668:ios:ccca644085de25c822a939 # FIXME
             firebase_app_distribution_groups: Tester # FIXME
 
           - os: macos-latest
             flavor: stg
-            build_script: .github/workflows/scripts/buildiOS.sh stg ${{ needs.release.outputs.build_name }} ${{ needs.release.outputs.build_number }}
+            build_script: .github/workflows/scripts/build_ios.sh stg ${{ needs.release.outputs.build_name }} ${{ needs.release.outputs.build_number }}
             upload_release_asset_name: iOS_stg.ipa.tar.gz
             firebase_app_distribution_app_id: 1:970978420457:ios:b7ecc1d711f47cd3bfb278 # FIXME
             firebase_app_distribution_groups: Tester # FIXME
 
           - os: macos-latest
             flavor: prod
-            build_script: .github/workflows/scripts/buildiOS.sh prod ${{ needs.release.outputs.build_name }} ${{ needs.release.outputs.build_number }}
+            build_script: .github/workflows/scripts/build_ios.sh prod ${{ needs.release.outputs.build_name }} ${{ needs.release.outputs.build_number }}
             upload_release_asset_name: iOS_prod.ipa.tar.gz
             upload_release_asset_name_store: iOS_prod_appStore.ipa.tar.gz
             firebase_app_distribution_app_id: 1:1066701925010:ios:43c5707102329348e3944b # FIXME

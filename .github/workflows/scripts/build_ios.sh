@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 
 if [ $# -ne 3 ]; then
-  echo "e.g. ./buildiOS dev 1.2.3 100" 1>&2
+  echo "e.g. ./build_ios dev 1.2.3 100" 1>&2
   exit 1
 fi
 
