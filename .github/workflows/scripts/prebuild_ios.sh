@@ -7,6 +7,8 @@ mobileprovisions=(
     "$MOBILEPROVISION_BASE64_APP_STORE"
 )
 
+mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+
 for e in "${mobileprovisions[@]}"; do
     if [ -z $e ]; then
         echo "skip"
