@@ -48,15 +48,15 @@ jobs:
 
           - os: macos-latest
             flavor: dev
-            build_script: .github/workflows/scripts/buildiOS.sh dev 1.2.3 100
+            build_script: .github/workflows/scripts/build_ios.sh dev 1.2.3 100
 
           - os: macos-latest
             flavor: stg
-            build_script: .github/workflows/scripts/buildiOS.sh stg 1.2.3 100
+            build_script: .github/workflows/scripts/build_ios.sh stg 1.2.3 100
 
           - os: macos-latest
             flavor: prod
-            build_script: .github/workflows/scripts/buildiOS.sh prod 1.2.3 100
+            build_script: .github/workflows/scripts/build_ios.sh prod 1.2.3 100
     runs-on: ${{ matrix.os }}
     steps:
       ### Set up ###
