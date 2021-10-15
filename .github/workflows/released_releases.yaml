@@ -53,7 +53,7 @@ jobs:
     env:
       P12_BASE64: ${{ secrets.P12_BASE64 }}
       P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
-      FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
+      FASTLANE_API_KEY_JSON: ${{ secrets.FASTLANE_API_KEY_JSON }}
     steps:
       ### Setup ###
       - uses: actions/checkout@v2
