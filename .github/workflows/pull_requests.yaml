@@ -36,8 +36,6 @@ jobs:
           channel: ${{ env.FLUTTER_CHANNEL }}
           flutter-version: ${{ env.FLUTTER_VERSION }}
 
-      - run: flutter pub get
-
       ### Test ###
       - name: Test
         run: .github/workflows/scripts/test.sh
