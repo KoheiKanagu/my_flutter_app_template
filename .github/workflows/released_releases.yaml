@@ -73,7 +73,7 @@ jobs:
           key: ${{ runner.os }}-flutter-${{ env.FLUTTER_CHANNEL }}-${{ env.FLUTTER_VERSION }}
 
       - name: CocoaPods Cache
-        if: ${{ runner.os == macOS }}
+        if: ${{ runner.os == 'macOS' }}
         uses: actions/cache@v2
         with:
           path: ./ios/Pods
@@ -82,7 +82,7 @@ jobs:
             ${{ runner.os }}-pods-
 
       - name: Gradle Cache
-        if: ${{ runner.os == linux }}
+        if: ${{ runner.os == 'linux' }}
         uses: actions/cache@v2
         with:
           path: |
@@ -135,7 +135,7 @@ jobs:
             --app ${{ matrix.firebase_app_distribution_app_id }} \
             --release-notes "${{ github.event.release.body }}" \
             --groups ${{ matrix.firebase_app_distribution_groups }} \
-            ./build/app/outputs/flutter-apk/app-release.apk 
+            ./build/app/outputs/flutter-apk/app-release.apk
 
       - name: Firebase App Distribution for iOS
         env:
