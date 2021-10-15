@@ -35,12 +35,12 @@ jobs:
         run: .github/workflows/scripts/test.sh
 
       - name: Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
         continue-on-error: true
         timeout-minutes: 1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: coverage/lcov.info
+          files: coverage/lcov.info
 
       ### Slack ###
       - name: Notify Slack
@@ -76,6 +76,10 @@ jobs:
             build_script: .github/workflows/scripts/build_android_prod.sh
             postbuild_script: .github/workflows/scripts/postbuild_android.sh
     runs-on: ${{ matrix.os }}
+    env:
+      P12_BASE64: ${{ secrets.P12_BASE64 }}
+      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+      FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
     steps:
       ### Setup ###
       - uses: actions/checkout@v2
