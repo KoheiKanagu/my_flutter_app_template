@@ -1,25 +1,5 @@
 #!/bin/bash -eu
 
-mobileprovisions=(
-    "$MOBILEPROVISION_BASE64_DEV"
-    "$MOBILEPROVISION_BASE64_STG"
-    "$MOBILEPROVISION_BASE64_PROD"
-    "$MOBILEPROVISION_BASE64_APP_STORE"
-)
-
-mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-
-for e in "${mobileprovisions[@]}"; do
-    if [ -z $e ]; then
-        echo "skip"
-    else
-        PP_PATH=build_ios_$RANDOM.mobileprovision
-        echo $e | base64 --decode --output $PP_PATH
-        echo "copy $PP_PATH"
-        cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
-    fi
-done
-
 keychain_password=$(openssl rand -base64 12 | fold -w 10 | head -1)
 
 fastlane run create_keychain \

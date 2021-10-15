@@ -4,9 +4,8 @@ on:
   - pull_request
 
 env:
-  SLACK_MENTION: "UQ0KVAQ6T" #メンバーID # FIXME
   FLUTTER_CHANNEL: "stable" # FIXME
-  FLUTTER_VERSION: "2.0.6" # FIXME
+  FLUTTER_VERSION: "2.5.2" # FIXME
 
 jobs:
   build:
@@ -58,7 +57,7 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
-          fields: repo,commit,job,took,workflow
-          mention: ${{ env.SLACK_MENTION }}
-          if_mention: always
+          fields: "all"
+          mention: "channel"
+          if_mention: "failure"
           status: ${{ job.status }}
