@@ -35,12 +35,12 @@ jobs:
         run: .github/workflows/scripts/test.sh
 
       - name: Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
         continue-on-error: true
         timeout-minutes: 1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: coverage/lcov.info
+          files: coverage/lcov.info
 
       ### Slack ###
       - name: Notify Slack
