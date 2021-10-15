@@ -1,0 +1,161 @@
+name: Released Releases
+
+on:
+  release:
+    types: [released]
+
+env:
+  FLUTTER_CHANNEL: "stable" # FIXME
+  FLUTTER_VERSION: "2.5.2" # FIXME
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest] # FIXME
+        flavor: [dev, prod] # FIXME
+        include:
+          - os: macos-latest # FIXME
+            flutter_path: /Users/runner/hostedtoolcache/flutter
+            prebuild_script: .github/workflows/scripts/prebuild_ios.sh
+            postbuild_script: .github/workflows/scripts/postbuild_ios.sh
+
+          - os: macos-latest # FIXME
+            flavor: dev
+            build_script: .github/workflows/scripts/build_ios_dev.sh
+            firebase_app_distribution_app_id: 1:636844036668:ios:ccca644085de25c822a939 # FIXME
+            firebase_app_distribution_groups: Tester # FIXME
+
+          - os: macos-latest # FIXME
+            flavor: prod
+            build_script: .github/workflows/scripts/build_ios_prod.sh
+            firebase_app_distribution_app_id: 1:1066701925010:ios:43c5707102329348e3944b # FIXME
+            firebase_app_distribution_groups: Tester # FIXME
+
+          - os: ubuntu-latest # FIXME
+            flutter_path: /opt/hostedtoolcache/flutter
+            prebuild_script: .github/workflows/scripts/prebuild_android.sh
+            postbuild_script: .github/workflows/scripts/postbuild_android.sh
+
+          - os: ubuntu-latest
+            flavor: dev
+            build_script: .github/workflows/scripts/build_android_dev.sh
+            firebase_app_distribution_app_id: 1:636844036668:android:b09e49dce9d3527922a939 # FIXME
+            firebase_app_distribution_groups: Tester # FIXME
+
+          - os: ubuntu-latest
+            flavor: prod
+            build_script: .github/workflows/scripts/build_android_prod.sh
+            firebase_app_distribution_app_id: 1:1066701925010:android:51be10ae2c513cc9e3944b # FIXME
+            firebase_app_distribution_groups: Tester # FIXME
+    runs-on: ${{ matrix.os }}
+    env:
+      P12_BASE64: ${{ secrets.P12_BASE64 }}
+      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+      FASTLANE_SESSION: ${{ secrets.FASTLANE_SESSION }}
+    steps:
+      ### Setup ###
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+
+      - run: |
+          npm install -g firebase-tools
+          firebase --version
+
+      - name: Flutter Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ matrix.flutter_path }}
+          key: ${{ runner.os }}-flutter-${{ env.FLUTTER_CHANNEL }}-${{ env.FLUTTER_VERSION }}
+
+      - name: CocoaPods Cache
+        if: runner.os == macOS
+        uses: actions/cache@v2
+        with:
+          path: ./ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Gradle Cache
+        if: runner.os == linux
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      ### Build ###
+      - name: Pre-Build
+        run: ${{ matrix.prebuild_script }}
+
+      - name: Build
+        run: ${{ matrix.build_script }}
+
+      - name: Post-Build
+        if: always()
+        run: ${{ matrix.postbuild_script }}
+
+      ### Deploy ###
+      - name: Upload Release Asserts for Store
+        if: ${{ matrix.flavor == 'prod' && runner.os == 'macos' }}
+        uses: softprops/action-gh-release@v0.1.13
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            ./build/ios/appStore.tar.gz
+
+      - name: Upload Release Asserts for Store
+        if: ${{ matrix.flavor == 'prod' && runner.os == 'linux' }}
+        uses: softprops/action-gh-release@v0.1.13
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: |
+            ./build/app/outputs/bundle/release/app-release.aab
+
+      - name: Firebase App Distribution for Android
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          firebase appdistribution:distribute \
+            --app ${{ matrix.firebase_app_distribution_app_id }} \
+            --release-notes "${{ github.event.release.body }}" \
+            --groups ${{ matrix.firebase_app_distribution_groups }} \
+            ./build/app/outputs/flutter-apk/app-release.apk 
+
+      - name: Firebase App Distribution for iOS
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          firebase appdistribution:distribute \
+            --app ${{ matrix.firebase_app_distribution_app_id }} \
+            --release-notes "${{ github.event.release.body }}" \
+            --groups ${{ matrix.firebase_app_distribution_groups }} \
+            ./build/ios/ipa/Runner.ipa
+
+        ### Slack ###
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          MATRIX_CONTEXT: '{"os": "${{ matrix.os }}", "flavor": "${{ matrix.flavor }}" }'
+        with:
+          fields: "all"
+          mention: "channel"
+          if_mention: "failure"
+          status: ${{ job.status }}

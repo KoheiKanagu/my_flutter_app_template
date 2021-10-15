@@ -1,0 +1,136 @@
+name: Closed Pull Requests
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+env:
+  FLUTTER_CHANNEL: "stable" # FIXME
+  FLUTTER_VERSION: "2.5.2" # FIXME
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      ### Setup ###
+      - uses: actions/checkout@v2
+
+      - name: Flutter Cache
+        uses: actions/cache@v2
+        with:
+          path: /opt/hostedtoolcache/flutter
+          key: ${{ runner.os }}-flutter-${{ env.FLUTTER_CHANNEL }}-${{ env.FLUTTER_VERSION }}
+
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      ### Test ###
+      - name: Test
+        run: .github/workflows/scripts/test.sh
+
+      - name: Codecov
+        uses: codecov/codecov-action@v1
+        continue-on-error: true
+        timeout-minutes: 1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: coverage/lcov.info
+
+      ### Slack ###
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        with:
+          fields: "all"
+          mention: "channel"
+          if_mention: "failure"
+          status: ${{ job.status }}
+
+  build:
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest] # FIXME
+        flavor: [prod] # FIXME
+        include:
+          - os: macos-latest # FIXME
+            flavor: prod
+            flutter_path: /Users/runner/hostedtoolcache/flutter
+            prebuild_script: .github/workflows/scripts/prebuild_ios.sh
+            build_script: .github/workflows/scripts/build_ios_prod.sh
+            postbuild_script: .github/workflows/scripts/postbuild_ios.sh
+
+          - os: ubuntu-latest # FIXME
+            flavor: prod
+            flutter_path: /opt/hostedtoolcache/flutter
+            prebuild_script: .github/workflows/scripts/prebuild_android.sh
+            build_script: .github/workflows/scripts/build_android_prod.sh
+            postbuild_script: .github/workflows/scripts/postbuild_android.sh
+    runs-on: ${{ matrix.os }}
+    steps:
+      ### Setup ###
+      - uses: actions/checkout@v2
+
+      - name: Flutter Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ matrix.flutter_path }}
+          key: ${{ runner.os }}-flutter-${{ env.FLUTTER_CHANNEL }}-${{ env.FLUTTER_VERSION }}
+
+      - name: CocoaPods Cache
+        if: runner.os == macOS
+        uses: actions/cache@v2
+        with:
+          path: ./ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: Gradle Cache
+        if: runner.os == linux
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - uses: subosito/flutter-action@v1
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      ### Build ###
+      - name: Pre-Build
+        run: ${{ matrix.prebuild_script }}
+
+      - name: Build
+        run: ${{ matrix.build_script }}
+
+      - name: Post-Build
+        if: always()
+        run: ${{ matrix.postbuild_script }}
+
+      ### Slack ###
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          MATRIX_CONTEXT: '{"os": "${{ matrix.os }}", "flavor": "${{ matrix.flavor }}" }'
+        with:
+          fields: "all"
+          mention: "channel"
+          if_mention: "failure"
+          status: ${{ job.status }}
