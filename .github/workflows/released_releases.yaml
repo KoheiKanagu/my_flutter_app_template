@@ -38,13 +38,13 @@ jobs:
             prebuild_script: .github/workflows/scripts/prebuild_android.sh
             postbuild_script: .github/workflows/scripts/postbuild_android.sh
 
-          - os: ubuntu-latest
+          - os: ubuntu-latest # FIXME
             flavor: dev
             build_script: .github/workflows/scripts/build_android_dev.sh
             firebase_app_distribution_app_id: 1:636844036668:android:b09e49dce9d3527922a939 # FIXME
             firebase_app_distribution_groups: Tester # FIXME
 
-          - os: ubuntu-latest
+          - os: ubuntu-latest # FIXME
             flavor: prod
             build_script: .github/workflows/scripts/build_android_prod.sh
             firebase_app_distribution_app_id: 1:1066701925010:android:51be10ae2c513cc9e3944b # FIXME
