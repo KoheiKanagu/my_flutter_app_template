@@ -109,7 +109,7 @@ jobs:
         run: ${{ matrix.postbuild_script }}
 
       ### Deploy ###
-      - name: Upload Release Asserts for Store
+      - name: Upload Release Assets for App Store
         if: ${{ matrix.flavor == 'prod' && runner.os == 'macos' }}
         uses: softprops/action-gh-release@v0.1.13
         env:
@@ -118,7 +118,7 @@ jobs:
           files: |
             ./build/ios/appStore.tar.gz
 
-      - name: Upload Release Asserts for Store
+      - name: Upload Release Assets for Google Play
         if: ${{ matrix.flavor == 'prod' && runner.os == 'linux' }}
         uses: softprops/action-gh-release@v0.1.13
         env:
@@ -128,6 +128,7 @@ jobs:
             ./build/app/outputs/bundle/release/app-release.aab
 
       - name: Firebase App Distribution for Android
+        if: ${{ runner.os == 'linux' }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
@@ -138,6 +139,7 @@ jobs:
             ./build/app/outputs/flutter-apk/app-release.apk
 
       - name: Firebase App Distribution for iOS
+        if: ${{ runner.os == 'macOS' }}
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
