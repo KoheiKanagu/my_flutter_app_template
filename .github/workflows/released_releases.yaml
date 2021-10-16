@@ -127,6 +127,10 @@ jobs:
           files: |
             ./build/app/outputs/bundle/release/app-release.aab
 
+      - name: Export release-note.txt
+        run: |
+          echo "${{ github.event.release.body }}" > release-note.txt
+
       - name: Firebase App Distribution for Android
         if: ${{ runner.os == 'linux' }}
         env:
@@ -134,7 +138,7 @@ jobs:
         run: |
           firebase appdistribution:distribute \
             --app ${{ matrix.firebase_app_distribution_app_id }} \
-            --release-notes "${{ github.event.release.body }}" \
+            --release-notes-file release-note.txt \
             --groups ${{ matrix.firebase_app_distribution_groups }} \
             ./build/app/outputs/flutter-apk/app-release.apk
 
@@ -145,7 +149,7 @@ jobs:
         run: |
           firebase appdistribution:distribute \
             --app ${{ matrix.firebase_app_distribution_app_id }} \
-            --release-notes "${{ github.event.release.body }}" \
+            --release-notes-file release-note.txt \
             --groups ${{ matrix.firebase_app_distribution_groups }} \
             ./build/ios/ipa/Runner.ipa
 
